@@ -9,5 +9,5 @@ The Becker_etal_2021_GRL_code provides step-by-step tools to download a region o
 
 Once the ice front is detected, the code looks for rampart-moat features and quantifies them according to the height of the rampart relative to the moat (dhRM), and the along-track distance from the ice front to the lowest portion of the moat (dxRM).  
 
-For more information, see the methods section of Becker et al. (2021).
+For more information, see the methods section of Becker et al. (2021) and Readme.pdf.
 
