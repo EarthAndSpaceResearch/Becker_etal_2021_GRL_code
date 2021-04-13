@@ -9,6 +9,10 @@ The Becker_etal_2021_GRL_code provides step-by-step tools to download a region o
 
 Once the ice front is detected, the code looks for rampart-moat features (Figure 1b,c) and quantifies them according to the height of the rampart relative to the moat (dhRM), and the along-track distance from the ice front to the lowest portion of the moat (dxRM).  
 
+
+
+<hr>
+
 The scripts in this package are:
 
 <b>Step_01_download_ross_front_atl06_data.ipynb:</b>
@@ -43,8 +47,14 @@ This script searches each ground track profile in which the ice front was detect
 This script implements Step (v) described in Subsection 2.3 of Becker et al. (2021).
 
 
+<hr>
+  
+  
 For more information, see the methods section of Becker et al. (2021) and Readme.pdf.
 
+
+
 <image src="fig1_readme.jpg">
+
 
 Figure 1. (a) Map showing the distribution of ICESat-2 reference ground tracks (RGTs) near the Ross Ice Shelf (RIS) front (ascending in red and descending in blue) overlaid on a December 2, 2018, Moderate Resolution Imaging Spectroradiometer (MODIS) image downloaded from NASA Worldview. The Depoorter et al. (2013) ice-shelf mask is shown with a black line. Gray lines on the ice shelf show modern ice streamlines derived from Rignot et al. (2017) velocity fields, with the streamline delineating the boundary between ice originating from the West and East Antarctic ice sheets (WAIS and EAIS, respectively) in black. Inset map (created using Antarctic Mapping Tools data; Greene et al., 2017) features the Mouginot et al. (2017) WAIS–EAIS boundary. (b) Schematic of ice-shelf bench (hatched area), R-M structure, and the conditions under which the bench forms. Three relevant R-M parameters, relative height (dhRM), relative along-track distance (dxRM), and near-front thickness (H), are indicated. (c) Height above instantaneous sea surface for Cycle 7 ICESat-2 ATL03 signal (light blue dots) and background (gray dots) photons, andATL06 segments (dark blue dots) for gt3r (strong beam) for RGT 0487, which is labeled in (a). ATL06-derived rampart and moat locations are marked as red crosses. 
