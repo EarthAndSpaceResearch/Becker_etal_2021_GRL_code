@@ -1,5 +1,7 @@
 # Becker_etal_2021_GRL_code
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4697517.svg)](https://doi.org/10.5281/zenodo.4697517)
+
 <b>Code for Ice-Front and Rampart-Moat Detection and Quantification in ICESat-2 Laser Altimetry</b>
 
 Becker, M. K., Howard, S. L., Fricker, H. A., Padman, L., Mosbeux, C., & Siegfried, M. R. (2021).  Buoyancy‐driven flexure at the front of Ross Ice Shelf, Antarctica, observed with ICESat‐2 laser altimetry.  <i>Geophysical Research Letters</i>, 48, e2020GL091207. https://doi.org/10.1029/2020GL091207
