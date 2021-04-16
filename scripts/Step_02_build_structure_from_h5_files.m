@@ -1,46 +1,44 @@
 % This script builds and saves a MATLAB structure with all relevant information
 % from the HDF5 files downloaded in Step 01 and plots the approximate ice-
 % shelf front location for each ground track profile over the mask from Depoorter 
-% et al. (2013). The user should specify the location of the HDF5 files with 
-% variable 'data_dir,' which should match the path specified at the end of 
-% the Step 01 Jupyter Notebook, as well as the location of the *.mat file 
+% et al. (2013). The user should specify the location of (1) the HDF5 files
+% with the variable 'data_dir,' which should match the path specified at the 
+% end of the Step 01 Jupyter Notebook, and (2) the location of the *.mat file 
 % containing the Depoorter et al. (2013) mask data.
 %
 % This script implements part of Step (i) described in Subsection 2.3 of 
 % Becker et al. (2021).
 %
 % NOTE: This script calls the Antarctic Mapping Tools 'll2ps' function
-% (Greene et al., 2017), which can be downloaded from the Mathworks File
+% (Greene et al., 2017), which can be downloaded from the MathWorks File
 % Exchange:
-% https://www.mathworks.com/matlabcentral/fileexchange/47638-antarctic-mapping-tools
+% https://www.mathworks.com/matlabcentral/fileexchange/47638-antarctic-mapping-tools.
 %
 % Susan L. Howard, Earth and Space Research, showard@esr.org
 % Maya K. Becker, Scripps Institution of Oceanography, mayakbecker@gmail.com
 %
-% Last update:  April 14, 2021.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last updated April 16, 2021
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Begin user input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 work_path = pwd;
-
 out_filename = 'ross_files.mat';   % output filename
-data_dir = 'D:\ICESat2\ross_data_download\ '; % should match the path specified at the end of the Step
-                                              % 01 Jupyter Notebook
-
-load 'Depoorter_et_al_2013_mask.mat'; %  Load mask from Depoorter et al.(2013)
+data_dir = 'D:\ICESat2\ross_data_download\'; % change to match the path 
+                                             % specified at the end of 
+                                             % the Step 01 Jupyter Notebook
+                                           
+load 'Depoorter_et_al_2013_mask.mat'; % load mask from Depoorter et al. (2013)
                  
-
-                  
-%%%%%%%%%%%%%%%%%%% end user input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% End user input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                  
                   
 cd(data_dir)
 all_files = dir('*.h5');
 number_of_files = length(all_files);
 
 % Create variables for the approximate front locations in the ground track
-% profiles-- for each front crossing, we keep track of the x and y locations 
-% on either side of crossing (ocean to ice shelf mask change, described
-% below)
+% profiles. For each front crossing, we keep track of the x and y locations 
+% on either side of the crossing (determined by the change in mask value
+% from ocean to ice shelf, described below).
 
 front_x = zeros(number_of_files,6,2);
 front_y = zeros(number_of_files,6,2);
@@ -51,8 +49,8 @@ cd(work_path)
 
 beams = ['1r'; '1l'; '2r'; '2l'; '3r'; '3l'];
 
-% Use Depoorter et al.(2013) mask -- Mask values are:  0: ocean, 
-% 1: land and grounded ice, 2: ice shelf--and plot it as a basemap
+% Plot the Depoorter et al. (2013) mask as a basemap. Mask values are as
+% follows: 0 = ocean, 1 = land and grounded ice, and 2 = ice shelf.
 
 [SM.X,SM.Y] = meshgrid(SM.x,SM.y);
 
@@ -63,19 +61,21 @@ axis('equal')
 axis([-700 550 -1550 -1075])
 hold on
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Read the relevant variables from each beam of each ATL06 file, check for 
+% a front crossing based on the mask, and store the variables in the structure
+% 'ross_files'
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 ross_files = struct;
 structure_entry = 0;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Read relevant variables from each beam of each ATL06 file, check for 
-% front crossings based on mask, and store in structure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for i = 1:number_of_files
     
     % Loop through all six beams of each file, pulling all relevant
     % variables--refer to ATL06 data dictionary for variable/attribute
-    % description: https://nsidc.org/data/atl06
+    % description: 
+    % https://nsidc.org/sites/nsidc.org/files/technical-references/ATL06-data-dictionary-v001.pdf
     
     for j = 1:length(beams)
         
@@ -94,7 +94,7 @@ for i = 1:number_of_files
             dem_h = h5read([data_dir '/' all_files(i).name], ['/gt' beams(j,:) '/land_ice_segments/dem/dem_h']);
             dem_flag = h5read([data_dir '/' all_files(i).name], ['/gt' beams(j,:) '/land_ice_segments/dem/dem_flag']);           
             sc_orient = h5read([data_dir '/' all_files(i).name], '/orbit_info/sc_orient'); 
-                % Flag values: ['0', '1', '2'], flag meanings: ['backward', 'forward', 'transition']
+                % spacecraft orientation parameter values: ['0', '1', '2']; value meanings: ['backward', 'forward', 'transition']
             x_atc = h5read([data_dir '/' all_files(i).name], ['/gt' beams(j,:) '/land_ice_segments/ground_track/x_atc']);
             y_atc = h5read([data_dir '/' all_files(i).name], ['/gt' beams(j,:) '/land_ice_segments/ground_track/y_atc']);
             product = all_files(i).name(11:15);
@@ -103,7 +103,7 @@ for i = 1:number_of_files
             region = all_files(i).name(38:39);
             
             % Determine the beam type, i.e., whether it is strong or weak,
-            % using the value of 'sc_orient' (spacecraft orientation)
+            % using the value of 'sc_orient'
             
             if sc_orient == 1
                 
@@ -133,7 +133,7 @@ for i = 1:number_of_files
             end
             
             % Convert latitude and longitude coordinates to polar stereographic
-            % map coordinates using 'll2ps' function (Greene et al., 2017)
+            % map coordinates using the 'll2ps' function (Greene et al., 2017)
             
             [x,y] = ll2ps(lat,lon);
             
@@ -148,8 +148,8 @@ for i = 1:number_of_files
             [a,b] = size(mask_interp);
             
             % Set the ellipsoidal height data ('h_li' in the ATL06 data 
-            % dictionary) values greater than 3e38, and their corresponding
-            % locations, to NaN
+            % dictionary and here) values greater than 3e38, and their
+            % corresponding locations, to NaN
             
             nan_idx = find(h_li > 3.e+38);
             
@@ -161,11 +161,12 @@ for i = 1:number_of_files
             
             % Loop through the interpolated mask values, calculating the
             % difference between each value and the next. A difference value
-            % greater than 1 denotes an ice-shelf front crossing (ocean = 0, 
-            % ice shelves = 2); there should only be one ice-shelf front
-            % crossing per beam/ground track profile. Only information from 
-            % beams that show a transition from ice shelf to ocean is
-            % included in the structure.
+            % greater than 1 denotes an ice-shelf front crossing (because
+            % the ocean mask value is 0 and the ice-shelf mask value is 2); 
+            % there should only be one ice-shelf front crossing per 
+            % beam/ground track profile. Only information from beams that
+            % show a transition from ice shelf to ocean is included in the
+            % structure.
             
             for k = 1:a-1
                 
@@ -259,9 +260,7 @@ end
 
 gt_count = structure_entry;
 
-% Save final 'ross_front_crossings' structure and other relevant parameters 
-% to a *.mat file
+% Save final 'ross_files' structure and other relevant parameters to a
+% *.mat file
 
 save(out_filename, '-v7.3', 'ross_files', 'gt_count', 'front_y', 'front_x')
-
-

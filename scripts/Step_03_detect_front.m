@@ -5,69 +5,66 @@
 % various data on the front crossing.
 %
 % This script implements part of Step (i) and steps (ii)-(iv) described in 
-% Subsection 2.3 of Becker et al. (2021).
+% Subsection 2.3 of Becker et al. (2021). This text also describes choices 
+% for cleaning up the data, specifically assessed for Ross Ice Shelf.    
 %
 % Susan L. Howard, Earth and Space Research, showard@esr.org
 % Maya K. Becker, Scripps Institution of Oceanography, mayakbecker@gmail.com
 %
-% Last update:  April 14, 2021.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last updated April 16, 2021
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Begin user input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 load 'ross_files.mat' % *.mat file created in Step 02
 
-out_filename = 'ross_front_crossing_data.mat';  % output filename
-
+out_filename = 'ross_front_crossing_data.mat'; % output filename
 
 ref_time = datenum(2018,01,01); % reference time for all ground track profiles
 
-mdt = -1.4;        % constant value to use for the MDT  correction.
+mdt = -1.4; % constant value to use for the MDT  correction
 
-
-% set h_ss ((instantaneous sea surface) outlier values
-hss_low=-5;
-hss_high=100;
-
+h_ss_low = -5;   % lowest allowable instantaneous sea surface (h_ss) value 
+h_ss_high = 100; % highest allowable h_ss value
 
 % Set various criteria that a ground track profile jump must satisfy in 
 % order to be classified as representing the ice front by the
 % front-detection algorithm
 
-h_a_upper_limit = 2; % upper limit of the height of the ocean point in the
-                     % front jump
-h_diff_lower_limit = 10; % lower limit of the height increase that
-                         % constitutes a front jump
-h_diff_upper_limit = 100; % upper limit of the height increase that 
-                          % constitutes a front jump                
+h_a_upper_limit = 2;          % upper limit of the height of the ocean 
+                              % point in the front jump
+                              
+h_diff_lower_limit = 10;      % lower limit of the height increase that
+                              % constitutes a front jump
+                              
+h_diff_upper_limit = 100;     % upper limit of the height increase that 
+                              % constitutes a front jump 
+                              
 jump_x_dist_upper_limit = 80; % upper limit of the along-track distance over
                               % which a front jump could occur
-
-                              
-                             
-%%%%%%%%%%%%%%%%%%%%%%%   end user input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                                        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% End user input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Clean data & apply geophysical corrections
+% Clean up the structure and apply geophysical corrections to the data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Clean up the structure from Step 02. Looping through each structure entry/
 % ground track profile, first set the h_li values to NaN for segments for 
-% which the interpolated Depoorter et al. (2013) mask value indicates that 
+% which the interpolated Depoorter et al. (2013) mask values indicate that 
 % they occur over grounded ice, and then do the same for segments for which 
 % the quality summary parameter ('atl06_quality_summary' in the ATL06 data 
-% dictionary) value indicates some sort of data-quality issue.
+% dictionary) values indicate data-quality issues.
 
 ross_files_clean = ross_files;
 
 for i = 1:gt_count
     
     grounded_ice_inds = find(ross_files_clean(i).mask == 1);
-        % value of 1 indicates grounded ice
+        % mask value of 1 indicates grounded ice
     ross_files_clean(i).h_li(grounded_ice_inds) = NaN;
     
     bad_quality_inds = find(ross_files_clean(i).quality_summary_flag == 1); 
-        % value of 1 indicates some potential data-quality problem
+        % parameter value of 1 indicates some potential data-quality problem
     ross_files_clean(i).h_li(bad_quality_inds) = NaN;
     
 end
@@ -77,8 +74,7 @@ end
 % ocean tides, inverted barometer effects (IBE), and mean dynamic topography 
 % (MDT). Obtain values for the geoid height and ocean tides and IBE corrections 
 % from the ATL06 product itself; apply a constant value for the MDT
-% correction.
-
+% correction (which was set in the user input section).
 
 for i = 1:gt_count
     
@@ -89,17 +85,17 @@ for i = 1:gt_count
     
 end
 
-% For each ground track profile, remove outliers of h_ss (limits  
-% set in user input section), and generate a new variable, 'x_dist,' 
-% which gives the difference in along-track x-coordinate between the first 
-% ATL06 segment and each successive segment
+% For each ground track profile, remove outliers of h_ss (the limits for 
+% which were set in the user input section), and generate a new variable, 
+% 'x_dist,' which gives the difference in along-track x-coordinate between 
+% the first ATL06 segment and each successive segment
 
 for i = 1:gt_count
     
-    low_h_ss_inds = find(ross_files_clean(i).h_ss < hss_low);
+    low_h_ss_inds = find(ross_files_clean(i).h_ss < h_ss_low);
     ross_files_clean(i).h_ss(low_h_ss_inds) = NaN;
     
-    high_h_ss_inds = find(ross_files_clean(i).h_ss > hss_high);
+    high_h_ss_inds = find(ross_files_clean(i).h_ss > h_ss_high);
     ross_files_clean(i).h_ss(high_h_ss_inds) = NaN;
     
     ross_files_clean(i).x_dist = ross_files_clean(i).x_atc - ... 
@@ -108,7 +104,8 @@ for i = 1:gt_count
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Create structure for ice front crossings
+% Create a new structure, 'ross_front_crossing_data,' for the ice-front 
+% crossings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Create a new structure that expands upon the cleaned-up version of the
@@ -152,6 +149,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Run the front-detection algorithm for each ground track profile
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 for i = 1:gt_count
     
     disp(i)
@@ -177,9 +175,10 @@ for i = 1:gt_count
             
             % Calculate 'h_diff,' the difference between adjacent values of 
             % h_ss. If a pair of points meets the height, height difference,
-            % and along-track distance criteria defined in input section, 
-            % take the pair as representing a front jump and gather data about
-            % the front crossing. Break out of this loop once the front is detected.
+            % and along-track distance criteria defined in the user input 
+            % section, take the pair as representing a front jump and gather
+            % data about the front crossing. Break out of this loop once 
+            % the front is detected.
             
             h_diff = abs(h_ss_non_NaN_inds(j + 1) - h_ss_non_NaN_inds(j));
             
@@ -336,5 +335,3 @@ end
 save(out_filename, '-v7.3', 'ross_front_crossing_data', 'gt_count', ... 
     'h_a_upper_limit', 'h_diff_lower_limit', 'h_diff_upper_limit', ... 
     'h_diff_upper_limit')
-
-
